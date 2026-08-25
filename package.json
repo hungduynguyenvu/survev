@@ -1,6 +1,33 @@
 {
+  "build": {
+    "appId": "io.survev.desktopclient",
+    "productName": "Survev Desktop",
+    "executableName": "Survev",
+
+    "directories": {
+      "output": "desktop-release"
+    },
+
+    "asar": true,
+
+    "files": [
+      "desktop/main.cjs"
+    ],
+
+    "extraFiles": [
+      {
+        "from": "client/dist",
+        "to": "client",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ]
+  },
+
   "name": "survev",
   "version": "0.3.13",
+  "main": "desktop/main.cjs",
   "type": "module",
   "description": "Open Source Surviv.io Server",
   "scripts": {
@@ -13,7 +40,10 @@
     "build": "cd server && pnpm build && cd ../client && pnpm build",
     "stressTest": "cd server && pnpm stressTest",
     "lint": "oxlint --fix; dprint fmt",
-    "lint:ci": "oxlint; dprint check"
+    "lint:ci": "oxlint; dprint check",
+    "desktop": "electron desktop/main.cjs",
+    "desktop:pack": "pnpm --dir client build && electron-builder --win --x64 --dir",
+    "desktop:zip": "pnpm --dir client build && electron-builder --win zip --x64"
   },
   "engines": {
     "node": ">=22.18.0"
@@ -25,6 +55,8 @@
     "@types/node": "~22.12.0",
     "concurrently": "^10.0.5",
     "dprint": "^0.55.2",
+    "electron": "^43.4.0",
+    "electron-builder": "^26.15.3",
     "oxlint": "^1.78.0",
     "typescript": "^6.0.3"
   },

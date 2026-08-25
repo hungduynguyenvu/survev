@@ -2,6 +2,7 @@ allowBuilds:
   '@taufik-nurrohman/color-picker': true
   canvas: true
   dprint: true
+  electron-winstaller: true
   esbuild: true
   sharp: true
   workerd: true
@@ -15,3 +16,4 @@ packages:
   - tests/
   - '!**dist/**'
 shellEmulator: true
+confirmModulesPurge: false

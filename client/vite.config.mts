@@ -54,9 +54,9 @@ export default defineConfig(({ mode }) => {
                 secure: false,
             },
             "/api": {
-                target: `http://${Config.apiServer.host}:${Config.apiServer.port}`,
+                target: `https://api.survev.io`,
                 changeOrigin: true,
-                secure: false,
+                secure: true,
             },
             "/team_v2": {
                 target: `http://${Config.apiServer.host}:${Config.apiServer.port}`,
@@ -101,9 +101,8 @@ export default defineConfig(({ mode }) => {
         resolve: {
             extensions: [".ts", ".js"],
             alias: {
-                "@/sdk.ts": viteEnv?.VITE_ENABLE_SURVEV_ADS === "true"
-                    ? "./sdk-manager.prod"
-                    : "./sdk-manager",
+                "@/sdk.ts": "./sdk-manager",
+                //Remove ads
             },
         },
         define: {

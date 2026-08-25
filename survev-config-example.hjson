@@ -1,0 +1,35 @@
+{
+    regions: {
+        na: {
+            https: true,
+            address: "usr.mathsiscoolfun.com",
+            l10n: "index-north-america"
+        },
+        eu: {
+            https: true,
+            address: "eur.mathsiscoolfun.com",
+            l10n: "index-europe"
+        },
+        ru: {
+            https: true,
+            address: "russia.mathsiscoolfun.com",
+            l10n: "index-russia"
+        },
+        asia: {
+            https: true,
+            address: "asr.mathsiscoolfun.com",
+            l10n: "index-asia"
+        },
+        sa: {
+            https: true,
+            address: "sa.mathsiscoolfun.com",
+            l10n: "index-south-america"
+        }
+    }
+    proxies: {
+        "127.0.0.1": {
+            google: true
+            discord: true
+        }
+    }
+}
