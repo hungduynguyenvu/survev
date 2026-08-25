@@ -1,3 +1,28 @@
+Note: this project was created with the help of generative AI.
+
+> [!NOTE]
+> ## Unofficial Survev Desktop Client
+>
+> This fork adds an unofficial standalone Electron desktop client for [Survev](https://github.com/survev/survev).
+>
+> The desktop client:
+>
+> - Runs as a portable Windows application.
+> - Uses locally stored client files and assets.
+> - Connects to the official Survev API and multiplayer servers.
+> - Supports anonymous play and normal account login.
+> - Preserves login sessions between launches.
+> - Supports account, XP/pass, player statistics, and leaderboard features.
+> - Uses the non-advertising client SDK.
+> - Keeps the built client files outside the executable for easier modification and experimentation.
+>
+> Desktop development, configuration, building, and packaging instructions are available in **[DESKTOP.md](./DESKTOP.md)**.
+>
+> This fork is not an official Survev desktop application and is not endorsed by the Survev project maintainers.
+>
+> ---
+
+
 <div align="center">
     <img src="./client/public/img/survev_logo_full.png" alt="Survev logo" style="height: 200px;">
 </div>
