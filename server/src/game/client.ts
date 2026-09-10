@@ -222,10 +222,10 @@ export class ClientBarn {
             if (joinData) {
                 if (joinData.type === "join") {
                     client = this.game.clientBarn.addClientWithPlayer(socket, joinData.data, joinMsg);
+                    this.game.joinTokens.delete(joinMsg.joinToken);
                 } else {
                     client = this.game.clientBarn.addSpectatorClient(socket, joinData.data);
                 }
-                this.game.joinTokens.delete(joinMsg.joinToken);
             }
 
             return;
@@ -555,14 +555,17 @@ export class Client {
 
         updateMsg.deletedPlayerIds = playerBarn.deletedPlayers;
 
-        if (playerBarn.playerStatusTicker > playerBarn.playerStatusRate) {
+        if (
+            playerBarn.playerStatusTicker > playerBarn.playerStatusRate
+            || (player.group && updateMsg.activePlayerIdDirty)
+        ) {
             let statuses = player.getPlayerStatus();
             updateMsg.playerStatus = statuses;
             updateMsg.playerStatusDirty = true;
         }
 
-        if (player.groupStatusDirty) {
-            const teamPlayers = player.group!.players;
+        if (player.group && (player.groupStatusDirty || updateMsg.activePlayerIdDirty)) {
+            const teamPlayers = player.group.players;
 
             let statuses: GroupStatus[] = [];
             for (const p of teamPlayers) {

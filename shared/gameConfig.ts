@@ -15,6 +15,8 @@ export enum Anim {
     CrawlForward,
     CrawlBackward,
     Revive,
+    DeployMelee,
+    IdleMelee,
     Count,
 }
 
@@ -101,6 +103,7 @@ export enum MapId {
     Cobalt = 7,
     Birthday = 8,
     Beach = 9,
+    FactionPotato = 10,
 }
 
 export enum Plane {
@@ -141,7 +144,7 @@ export const GameConfig = {
     // the protocol we originated from was 78
     // remember to bump this every time a serialization function is changed
     // or a definition item added, removed or moved
-    protocolVersion: 1024,
+    protocolVersion: 1026,
     Action,
     Anim,
     DamageType,

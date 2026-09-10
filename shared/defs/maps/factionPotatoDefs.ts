@@ -6,7 +6,7 @@ import type { PartialMapDef } from "./baseDefs.ts";
 import { Faction } from "./factionDefs.ts";
 
 const mapDef: PartialMapDef = {
-    mapId: GameConfig.MapId.Faction,
+    mapId: GameConfig.MapId.FactionPotato,
     desc: {
         name: "Potato vs Tomato",
         icon: "img/gui/star.svg",
@@ -102,7 +102,7 @@ const mapDef: PartialMapDef = {
     gameConfig: {
         planes: {
             crates: [
-                { name: "airdrop_crate_03po", weight: 110 },
+                { name: "airdrop_crate_03po", weight: 1110 },
                 { name: "airdrop_crate_03dev", weight: 1 },
             ],
         },

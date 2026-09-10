@@ -11,7 +11,7 @@ import type { ObstacleDef } from "./obstacleDefs.ts";
 function createBarrel(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "barrel",
+        category: "barrel",
         scale: { createMin: 1, createMax: 1, destroy: 0.6 },
         collision: collider.createCircle(v2.create(0, 0), 1.75),
         height: 0.5,
@@ -109,6 +109,7 @@ function createCampfire(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createPotato(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
+        category: "potato",
         scale: { createMin: 1, createMax: 1, destroy: 0.8 },
         collision: collider.createCircle(v2.create(0, 0), 1.1),
         height: 0.5,
@@ -144,6 +145,7 @@ function createPotato(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createTomato(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
+        category: "potato",
         scale: { createMin: 1, createMax: 1, destroy: 0.8 },
         collision: collider.createCircle(v2.create(0, 0), 1.1),
         height: 0.5,
@@ -529,6 +531,8 @@ export const MapObstacleDefs: Record<string, ObstacleDef> = {
     bush_01: createBush({}),
     bush_01b: createBush({ img: { alpha: 1 } }),
     bush_01cb: createBush({
+        hitParticle: "leafSynthetic",
+        explodeParticle: "leafSynthetic",
         img: { sprite: "map-bush-01cb.img" },
         map: { color: 0x266f59 },
     }),
@@ -673,7 +677,11 @@ export const MapObstacleDefs: Record<string, ObstacleDef> = {
         sound: { enter: "bush_enter_02" },
     }),
     bush_07x: createBush({ img: { sprite: "map-bush-07x.img" } }),
-    bush_07cb: createBush({ img: { sprite: "map-bush-07cb.img" } }),
+    bush_07cb: createBush({
+        hitParticle: "leafSynthetic",
+        explodeParticle: "leafSynthetic",
+        img: { sprite: "map-bush-07cb.img" },
+    }),
 
     campfire_01: createCampfire({}),
 

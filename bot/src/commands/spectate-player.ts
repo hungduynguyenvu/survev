@@ -55,7 +55,7 @@ export const spectateCommandHandler = {
                     return {
                         region: data.region,
                         data: `${gameData.gameId.slice(0, 6)} - ${
-                            GameConfig.TeamModeToString[gameData.teamMode]
+                            GameConfig.TeamModeToString[gameData.teamMode].padEnd(5)
                         } - ${gameData.mapName}`,
                         url: `[Join Link](${url.toString()})`,
                     };
@@ -97,8 +97,7 @@ export const spectateCommandHandler = {
 
                 embed.setDescription(text);
                 embed.setFooter({
-                    text:
-                        "NOTE: Join links are one time use and expire after 1 minute, if the target player died or if the game ended.",
+                    text: "NOTE: Join links expire after 1 minute, if the target player died or if the game ended.",
                 });
                 if (done) {
                     title = `Found ${playerCount} player${playerCount > 1 ? "s" : ""} with ${

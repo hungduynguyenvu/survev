@@ -4141,26 +4141,66 @@ a:active {
   right: 10px;
 }
 
+.pass-quest-desc-container {
+  display: flex;
+}
+
 .pass-quest-desc {
   line-height: 22px;
   margin: 0 0 6px 4px;
   min-height: 20px;
 }
 
-.pass-quest-desc-icon {
+.pass-quest-icon {
+  height: 24px;
+  width: 24px;
+  display: flex;
+}
+
+.pass-quest-icon::before, .pass-quest-icon::after {
+  content: '';
   background-repeat: no-repeat;
+  background-position: center center;
   background-size: 20px;
+  height: 24px;
+  width: 24px;
   text-indent: 24px;
+  display: inline-block;
+  position: absolute;
+  transition: opacity 500ms, transform 200ms;
+}
+
+.pass-quest-icon::before {
+  background-image: var(--img-url-1);
+  opacity: var(--img-alpha-1);
+}
+.pass-quest-icon::after {
+  background-image: var(--img-url-2);
+  opacity: var(--img-alpha-2);
+}
+
+.pass-quest-icon:hover {
+  &::after, &::before {
+    transform: scale(1.5)!important;
+  }
 }
 
 .pass-quest-xp {
   color: gray;
   font-size: 14px;
-  font-weight: 400;
+  font-weight: bold;
   position: absolute;
   text-align: center;
   top: 2px;
   right: 30px;
+}
+
+.pass-quest-xp[data-xp="40"] {
+  color: #ff9900;
+}
+
+.pass-quest-xp[data-xp="50"] {
+  color: #B30000;
 }
 
 .pass-quest-refresh {
@@ -4208,7 +4248,7 @@ a:active {
   font-size: 14px;
 }
 
-.pass-quest-counter-goal {
+.pass-quest-counter-target {
   font-size: 14px;
 }
 

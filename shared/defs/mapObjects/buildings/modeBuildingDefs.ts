@@ -6927,7 +6927,12 @@ export const ModeBuildingDefs: Record<string, BuildingDef> = {
                 },
             ],
         },
-        ceiling: { zoomRegions: [], imgs: [] },
+        // HACK: used to define a region that counts as "river town" for quests
+        goreRegion: collider.createAabbExtents(v2.create(0, 10), v2.create(125, 70)),
+        ceiling: {
+            zoomRegions: [],
+            imgs: [],
+        },
         mapObjects: [
             {
                 type: "bridge_xlg_structure_01",

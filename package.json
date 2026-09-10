@@ -26,7 +26,7 @@
   },
 
   "name": "survev",
-  "version": "0.3.13",
+  "version": "0.4.1",
   "main": "desktop/main.cjs",
   "type": "module",
   "description": "Open Source Surviv.io Server",
@@ -57,13 +57,13 @@
     "dprint": "^0.55.2",
     "electron": "^43.4.0",
     "electron-builder": "^26.15.3",
-    "oxlint": "^1.78.0",
+    "oxlint": "^1.81.0",
     "typescript": "^6.0.3"
   },
   "dependencies": {
     "enquirer": "^2.4.1",
     "hjson": "^3.2.2",
-    "tsx": "^4.23.12"
+    "tsx": "^4.23.13"
   },
-  "packageManager": "pnpm@11.18.0"
+  "packageManager": "pnpm@11.24.0"
 }

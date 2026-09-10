@@ -404,7 +404,7 @@ export class Building implements AbstractObject {
                         }
                     }
                 }
-                audioManager.playSound(def.puzzle?.sound.fail!, {
+                audioManager.playSound(def.puzzle!.sound.fail, {
                     channel: "sfx",
                     soundPos: nearestObj.pos,
                     layer: nearestObj.layer,
@@ -417,7 +417,7 @@ export class Building implements AbstractObject {
                 map.solvedPuzzleIds.push(this.__id);
                 this.playedSolvedPuzzleFx = true;
                 if (!this.isNew && def.puzzle?.sound.complete != "none") {
-                    audioManager.playSound(def.puzzle?.sound.complete!, {
+                    audioManager.playSound(def.puzzle!.sound.complete, {
                         channel: "sfx",
                         soundPos: this.pos,
                         layer: this.layer,
@@ -670,8 +670,8 @@ export class Building implements AbstractObject {
             if (debug.buildings?.waterEdge) {
                 renderWaterEdge(this);
             }
+            const def = MapObjectDefs.typeToDef(this.type, "building");
             if (debug.buildings?.minimap) {
-                const def = MapObjectDefs.typeToDef(this.type, "building");
                 if (def.map && def.map.display) {
                     const scale = def.map.scale ?? 1;
                     if (def.map.shapes) {
@@ -718,6 +718,13 @@ export class Building implements AbstractObject {
                         debugLines.addCollider(colliders[j], 0xff0000, 0);
                     }
                 }
+            }
+            if (debug.buildings?.goreRegion && def.goreRegion) {
+                debugLines.addCollider(
+                    collider.transform(def.goreRegion, this.pos, this.rot, this.scale),
+                    0xff0000,
+                    0.2,
+                );
             }
         }
     }
