@@ -7,6 +7,10 @@
     "directories": {
       "output": "desktop-release"
     },
+    
+    "win": {
+      "icon": "build/icon.png"
+    },
 
     "asar": true,
 
