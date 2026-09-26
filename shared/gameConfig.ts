@@ -1,3 +1,5 @@
+import type { LootDef } from "./defs/gameObjectDefs.ts";
+
 export enum Action {
     None,
     Reload,
@@ -139,12 +141,21 @@ export enum FactionTeam {
     Blue = 2,
 }
 
+export interface TracerColors {
+    regular: number;
+    saturated: number;
+    chambered?: number;
+    apSaturated?: number;
+    alphaRate?: number;
+    alphaMin?: number;
+}
+
 export const GameConfig = {
     // started with 1000 to distinguish us from the original surviv protocol
     // the protocol we originated from was 78
     // remember to bump this every time a serialization function is changed
     // or a definition item added, removed or moved
-    protocolVersion: 1026,
+    protocolVersion: 1027,
     Action,
     Anim,
     DamageType,
@@ -312,7 +323,7 @@ export const GameConfig = {
             apSaturated: 0xa54b0b,
             alphaRate: 0.92,
             alphaMin: 0.14,
-        },
+        } as TracerColors,
         "9mm_suppressed_bonus": {
             regular: 0xfee2c6,
             saturated: 0xffd9b3,
@@ -320,7 +331,7 @@ export const GameConfig = {
             apSaturated: 0xa54b0b,
             alphaRate: 0.96,
             alphaMin: 0.28,
-        },
+        } as TracerColors,
         "9mm_cursed": {
             regular: 0x130900,
             saturated: 0x130900,
@@ -328,7 +339,7 @@ export const GameConfig = {
             apSaturated: 0x130900,
             alphaRate: 0.92,
             alphaMin: 0.14,
-        },
+        } as TracerColors,
         "762mm": {
             regular: 0xc5d6fe,
             saturated: 0xabc4ff,
@@ -336,13 +347,13 @@ export const GameConfig = {
             apSaturated: 0x0000c8,
             alphaRate: 0.94,
             alphaMin: 0.2,
-        },
+        } as TracerColors,
         "12gauge": {
             regular: 0xfedcdc,
             saturated: 0xfedcdc,
             chambered: 0xff0000,
             apSaturated: 0x9f0000,
-        },
+        } as TracerColors,
         "556mm": {
             regular: 0xa9ff92,
             saturated: 0xa9ff92,
@@ -350,13 +361,13 @@ export const GameConfig = {
             apSaturated: 0x308000,
             alphaRate: 0.92,
             alphaMin: 0.14,
-        },
+        } as TracerColors,
         "50AE": {
             regular: 0xfff088,
             saturated: 0xfff088,
             chambered: 0xffdf00,
             apSaturated: 0xff8000,
-        },
+        } as TracerColors,
         "308sub": {
             regular: 0x252b00,
             saturated: 0x465000,
@@ -364,26 +375,26 @@ export const GameConfig = {
             apSaturated: 0x000a02,
             alphaRate: 0.92,
             alphaMin: 0.07,
-        },
+        } as TracerColors,
         flare: {
             regular: 0xe2e2e2,
             saturated: 0xe2e2e2,
             chambered: 0xc4c4c4,
             apSaturated: 0xc4c4c4,
-        },
+        } as TracerColors,
         "45acp": {
             regular: 0xecbeff,
             saturated: 0xe7acff,
             chambered: 0xb500ff,
             apSaturated: 0x470349,
-        },
+        } as TracerColors,
         shrapnel: {
             regular: 0x333333,
             saturated: 0x333333,
             chambered: 0x660900,
-        },
-        frag: { regular: 0xcb0000, saturated: 0xcb0000, apSaturated: 0xcb0000 },
-        invis: { regular: 0, saturated: 0, chambered: 0, apSaturated: 0 },
+        } as TracerColors,
+        frag: { regular: 0xcb0000, saturated: 0xcb0000, apSaturated: 0xcb0000 } as TracerColors,
+        invis: { regular: 0, saturated: 0, chambered: 0, apSaturated: 0 } as TracerColors,
     },
     scopeZoomRadius: {
         desktop: {
@@ -402,32 +413,32 @@ export const GameConfig = {
         } as Record<string, number>,
     },
     bagSizes: {
-        "9mm": [120, 240, 330, 420],
-        "762mm": [90, 180, 240, 300],
-        "556mm": [90, 180, 240, 300],
-        "12gauge": [15, 30, 60, 90],
-        "50AE": [49, 98, 147, 196],
-        "308sub": [20, 40, 60, 80],
-        flare: [2, 4, 6, 8],
-        "45acp": [90, 180, 240, 300],
-        frag: [3, 6, 9, 12],
-        smoke: [3, 6, 9, 12],
-        strobe: [2, 3, 4, 5],
-        mirv: [2, 4, 6, 8],
-        snowball: [10, 20, 30, 40],
-        potato: [10, 20, 30, 40],
-        tomato: [10, 20, 30, 40],
-        coconut: [3, 6, 9, 12],
-        bandage: [5, 10, 15, 30],
-        healthkit: [1, 2, 3, 4],
-        soda: [2, 5, 10, 15],
-        painkiller: [1, 2, 3, 4],
-        "1xscope": [1, 1, 1, 1],
-        "2xscope": [1, 1, 1, 1],
-        "4xscope": [1, 1, 1, 1],
-        "8xscope": [1, 1, 1, 1],
-        "15xscope": [1, 1, 1, 1],
-    },
+        "9mm": [120, 240, 330, 420, 510],
+        "762mm": [90, 180, 240, 300, 360],
+        "556mm": [90, 180, 240, 300, 360],
+        "12gauge": [15, 30, 60, 90, 120],
+        "50AE": [50, 100, 150, 200, 250],
+        "308sub": [20, 40, 55, 70, 85],
+        flare: [2, 4, 6, 8, 10],
+        "45acp": [90, 180, 240, 300, 360],
+        frag: [3, 6, 9, 12, 15],
+        smoke: [3, 6, 9, 12, 15],
+        strobe: [2, 3, 4, 5, 6],
+        mirv: [2, 4, 6, 8, 10],
+        snowball: [10, 20, 30, 40, 50],
+        potato: [10, 20, 30, 40, 50],
+        tomato: [10, 20, 30, 40, 50],
+        coconut: [3, 6, 9, 12, 15],
+        bandage: [5, 10, 15, 30, 45],
+        healthkit: [1, 2, 3, 4, 5],
+        soda: [2, 5, 10, 15, 20],
+        painkiller: [1, 2, 3, 4, 5],
+        "1xscope": [1, 1, 1, 1, 1],
+        "2xscope": [1, 1, 1, 1, 1],
+        "4xscope": [1, 1, 1, 1, 1],
+        "8xscope": [1, 1, 1, 1, 1],
+        "15xscope": [1, 1, 1, 1, 1],
+    } satisfies Record<string, [number, number, number, number, number]>,
     lootRadius: {
         outfit: 1,
         melee: 1.25,
@@ -442,7 +453,7 @@ export const GameConfig = {
         scope: 1,
         perk: 1.25,
         xp: 1,
-    } as Record<string, number>,
+    } as Record<LootDef["type"], number>,
 };
 
 export type InventoryItem = keyof (typeof GameConfig)["bagSizes"];

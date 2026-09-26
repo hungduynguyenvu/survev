@@ -1,4 +1,5 @@
 import { Rarity } from "../../gameConfig.ts";
+import type { BaseLoadoutItem } from "./itemTypes.ts";
 
 export enum EmoteCategory {
     Locked,
@@ -11,10 +12,8 @@ export enum EmoteCategory {
     Default,
 }
 
-export interface EmoteDef {
-    readonly type: "emote";
-    name?: string;
-    rarity?: Rarity;
+export interface EmoteDef extends BaseLoadoutItem {
+    type: "emote";
     texture: string;
     sound: string;
     channel: string;
@@ -1831,7 +1830,7 @@ export const EmotesDefs: Record<string, EmoteDef> = {
     emote_traumatizedface: {
         type: "emote",
         name: "Traumatized Face",
-        rarity: Rarity.Uncommon,
+        rarity: Rarity.Rare,
         texture: "face-traumatized.img",
         sound: "emote_01",
         channel: "ui",
@@ -1861,7 +1860,7 @@ export const EmotesDefs: Record<string, EmoteDef> = {
     emote_salutingface: {
         type: "emote",
         name: "Saluting Face",
-        rarity: Rarity.Rare,
+        rarity: Rarity.Uncommon,
         texture: "face-salute.img",
         sound: "emote_01",
         channel: "ui",

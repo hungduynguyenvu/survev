@@ -68,8 +68,9 @@ const mapDef: PartialMapDef = {
             { name: "l86", count: 1, weight: 0.75 }, // ?
             { name: "svd", count: 1, weight: 0.75 }, // ?
             { name: "garand", count: 1, weight: 0.45 }, // ?
-            { name: "scarssr", count: 1, weight: 0.12 }, // ?
-            { name: "awc", count: 1, weight: 0.12 }, // ?
+            { name: "scarssr", count: 1, weight: 0.06 },
+            { name: "barrett", count: 1, weight: 0.06 },
+            { name: "awc", count: 1, weight: 0.06 },
             { name: "sv98", count: 1, weight: 0.09 }, // ?
         ],
         tier_armor: [
@@ -91,14 +92,16 @@ const mapDef: PartialMapDef = {
             { name: "vss", count: 1, weight: 2.5 }, // !
             { name: "l86", count: 1, weight: 0.75 }, // ?
             { name: "svd", count: 1, weight: 0.75 }, // ?
-            { name: "scarssr", count: 1, weight: 0.15 }, // ?
-            { name: "awc", count: 1, weight: 0.15 }, // ?
+            { name: "scarssr", count: 1, weight: 0.075 },
+            { name: "barrett", count: 1, weight: 0.075 },
+            { name: "awc", count: 1, weight: 0.075 },
             { name: "sv98", count: 1, weight: 0.1 }, // ?
         ],
         tier_airdrop_rare: [
             { name: "garand", count: 1, weight: 6 },
-            { name: "awc", count: 1, weight: 3 },
-            { name: "scarssr", count: 1, weight: 3 },
+            { name: "barrett", count: 1, weight: 1.5 },
+            { name: "awc", count: 1, weight: 1.5 },
+            { name: "scarssr", count: 1, weight: 1.5 },
             { name: "sv98", count: 1, weight: 3 },
             { name: "scorpion", count: 1, weight: 5 }, // ?
             { name: "ots38_dual", count: 1, weight: 4.5 },
@@ -170,11 +173,12 @@ const mapDef: PartialMapDef = {
                         odds: 1,
                         innerRad: 32,
                         outerRad: 48,
-                        centerObj: "crate_02sv_lake",
+                        centerObj: "bunker_structure_10",
                         spawnBound: {
                             pos: v2.create(0.5, 0.5),
                             rad: 200,
                         },
+                        riverMaskRad: 85,
                     },
                     {
                         odds: 1,

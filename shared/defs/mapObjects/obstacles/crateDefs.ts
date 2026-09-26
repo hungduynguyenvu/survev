@@ -298,6 +298,20 @@ export const CrateDefs: Record<string, ObstacleDef> = {
         ],
         hitParticle: "blackChip",
     }),
+    case_10: createCase({
+        health: 140,
+        img: {
+            sprite: "map-case-cloud-01.img",
+            residue: "map-case-hatchet-res-01.img",
+        },
+        loot: [
+            autoLoot("backpack04_cloud", 1),
+            tierLoot("tier_perks", 1, 1),
+            tierLoot("tier_ammo", 2, 3),
+            tierLoot("tier_medical", 2, 2),
+        ],
+        hitParticle: "blackChip",
+    }),
     chest_01: createChest({
         loot: [
             tierLoot("tier_chest", 3, 4),
@@ -666,7 +680,7 @@ export const CrateDefs: Record<string, ObstacleDef> = {
         health: 200,
         loot: [
             tierLoot("tier_airdrop_rare", 1, 1),
-            tierLoot("tier_airdrop_armor", 1, 1),
+            autoLoot("backpack04_cloud", 1),
             tierLoot("tier_medical", 2, 2),
             tierLoot("tier_airdrop_scopes", 1, 1),
             tierLoot("tier_airdrop_outfits", 1, 1),

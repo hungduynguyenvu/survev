@@ -8,7 +8,7 @@ import { v2 } from "../../shared/utils/v2.ts";
 import type { Ambiance } from "./ambiance.ts";
 import type { AudioManager } from "./audioManager.ts";
 import { Camera } from "./camera.ts";
-import type { ConfigManager, DebugRenderOpts } from "./config.ts";
+import type { ConfigManager, DebugRendererOpts } from "./config.ts";
 import { DebugHUD } from "./debug/debugHUD.ts";
 import { debugLines } from "./debug/debugLines.ts";
 
@@ -17,6 +17,7 @@ import { Editor } from "./debug/editor.ts";
 /* STRIP_FROM_PROD_CLIENT:END */
 
 import { GameObjectDefs } from "../../shared/defs/register.ts";
+import { type Connection, ConnectionState, WebsocketConnection } from "../../shared/net/connection.ts";
 import { SpectateAction } from "../../shared/net/spectateMsg.ts";
 import type { GameWsDisconnectReason } from "../../shared/types/api.ts";
 import { device } from "./device.ts";
@@ -64,7 +65,8 @@ export class Game {
     teamMode: TeamMode = TeamMode.Solo;
 
     victoryMusic: SoundHandle | null = null;
-    m_ws: WebSocket | null = null;
+    m_connection: Connection | null = null;
+
     connecting = false;
     connected = false;
 
@@ -141,70 +143,66 @@ export class Game {
     }
 
     tryJoinGame(url: string, joinToken: string, onConnectFail: () => void) {
-        if (!this.connecting && !this.connected && !this.initialized) {
-            if (this.m_ws) {
-                this.m_ws.onerror = function() {};
-                this.m_ws.onopen = function() {};
-                this.m_ws.onmessage = function() {};
-                this.m_ws.onclose = function() {};
-                this.m_ws.close();
-                this.m_ws = null;
-            }
-            this.connecting = true;
-            this.connected = false;
-            try {
-                this.m_ws = new WebSocket(url);
-                this.m_ws.binaryType = "arraybuffer";
-                this.m_ws.onerror = (_err) => {
-                    this.m_ws?.close();
-                };
-                this.m_ws.onopen = () => {
-                    this.connecting = false;
-                    this.connected = true;
-                    const name = this.m_config.get("playerName")!;
-                    const joinMessage = new net.JoinMsg();
-                    joinMessage.protocol = GameConfig.protocolVersion;
-                    joinMessage.joinToken = joinToken;
-                    joinMessage.name = name;
-                    joinMessage.useTouch = device.touch;
-                    joinMessage.isMobile = device.mobile || window.mobile!;
-                    joinMessage.bot = false;
-                    joinMessage.loadout = this.m_config.get("loadout")!;
-                    this.m_sendMessage(net.MsgType.Join, joinMessage, 8192);
-                };
-                this.m_ws.onmessage = (e) => {
-                    const msgStream = new net.MsgStream(e.data);
-                    while (true) {
-                        const type = msgStream.deserializeMsgType();
-                        if (type == net.MsgType.None) {
-                            break;
-                        }
-                        this.m_onMsg(type, msgStream.getStream());
-                        msgStream.stream.readAlignToNextByte();
+        if (this.connecting || this.connected || this.initialized) return;
+
+        if (this.m_connection) {
+            this.m_connection.resetAndClose();
+            this.m_connection = null;
+        }
+
+        this.connecting = true;
+        this.connected = false;
+        try {
+            this.m_connection = new WebsocketConnection(url);
+            this.m_connection.onError = () => {
+                this.m_connection?.close();
+            };
+            this.m_connection.onOpen = () => {
+                this.connecting = false;
+                this.connected = true;
+                const name = this.m_config.get("playerName")!;
+                const joinMessage = new net.JoinMsg();
+                joinMessage.protocol = GameConfig.protocolVersion;
+                joinMessage.joinToken = joinToken;
+                joinMessage.name = name;
+                joinMessage.useTouch = device.touch;
+                joinMessage.isMobile = device.mobile || window.mobile!;
+                joinMessage.bot = false;
+                joinMessage.loadout = this.m_config.get("loadout")!;
+                this.m_sendMessage(net.MsgType.Join, joinMessage, 8192);
+            };
+            this.m_connection.onMessage = (data) => {
+                const msgStream = new net.MsgStream(data);
+                while (true) {
+                    const type = msgStream.deserializeMsgType();
+                    if (type == net.MsgType.None) {
+                        break;
                     }
-                    this.debugHUD?.netInGraph.addEntry(
-                        msgStream.stream.buffer.byteLength,
-                    );
-                };
-                this.m_ws.onclose = (e) => {
-                    const displayingStats = this.m_uiManager?.displayingStats;
-                    const connecting = this.connecting;
-                    const connected = this.connected;
-                    this.connecting = false;
-                    this.connected = false;
-                    if (connecting) {
-                        onConnectFail();
-                    } else if (connected && !this.m_gameOver && !displayingStats) {
-                        const errMsg = (e.reason as GameWsDisconnectReason) || "host_closed";
-                        this.onQuit(errMsg);
-                    }
-                };
-            } catch (err) {
-                console.error(err);
+                    this.m_onMsg(type, msgStream.getStream());
+                    msgStream.stream.readAlignToNextByte();
+                }
+                this.debugHUD?.netInGraph.addEntry(
+                    msgStream.stream.buffer.byteLength,
+                );
+            };
+            this.m_connection.onClose = (_, reason) => {
+                const displayingStats = this.m_uiManager?.displayingStats;
+                const connecting = this.connecting;
+                const connected = this.connected;
                 this.connecting = false;
                 this.connected = false;
-                onConnectFail();
-            }
+                if (connecting) {
+                    onConnectFail();
+                } else if (connected && !this.m_gameOver && !displayingStats) {
+                    const errMsg = (reason as GameWsDisconnectReason) || "host_closed";
+                    this.onQuit(errMsg);
+                }
+            };
+        } catch (err) {
+            console.error(err);
+            this.connecting = false;
+            this.connected = false;
+            onConnectFail();
         }
     }
 
@@ -340,10 +338,9 @@ export class Game {
     }
 
     free() {
-        if (this.m_ws) {
-            this.m_ws.onmessage = function() {};
-            this.m_ws.close();
-            this.m_ws = null;
+        if (this.m_connection) {
+            this.m_connection.resetAndClose();
+            this.m_connection = null;
         }
         this.connecting = false;
         this.connected = false;
@@ -395,14 +392,14 @@ export class Game {
             }
         }
 
-        let debug: DebugRenderOpts;
+        let debug: DebugRendererOpts;
         if (IS_DEV) {
             debug = this.m_config.get("debugRenderer")!;
             dt *= this.editor.toolParams.gameSpeedEnabled
                 ? this.editor.toolParams.gameSpeed
                 : 1;
         } else {
-            debug = {} as DebugRenderOpts;
+            debug = {} as DebugRendererOpts;
         }
 
         const smokeParticles = this.m_smokeBarn.m_particles;
@@ -982,7 +979,7 @@ export class Game {
         this.m_render(dt, debug);
     }
 
-    m_render(dt: number, debug: DebugRenderOpts) {
+    m_render(dt: number, debug: DebugRendererOpts) {
         const grassColor = this.m_map.mapLoaded
             ? this.m_map.getMapDef().biome.colors.grass
             : 0x80af49;
@@ -1606,12 +1603,12 @@ export class Game {
     m_sendMessageImpl(msgStream: net.MsgStream) {
         // Separate function call so sendMessage can be optimized;
         // v8 won't optimize functions containing a try/catch
-        if (this.m_ws && this.m_ws.readyState == this.m_ws.OPEN) {
+        if (this.m_connection && this.m_connection.state == ConnectionState.Open) {
             try {
-                this.m_ws.send(msgStream.getBuffer());
+                this.m_connection.send(msgStream.getBuffer());
             } catch (e) {
                 console.error("sendMessageException", e);
-                this.m_ws.close();
+                this.m_connection.close();
             }
         }
     }

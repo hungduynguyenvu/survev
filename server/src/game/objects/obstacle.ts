@@ -1,3 +1,4 @@
+import { PerkProperties } from "../../../../shared/defs/gameObjects/perkDefs.ts";
 import { GameObjectDefs, MapObjectDefs } from "../../../../shared/defs/register.ts";
 import { DamageType, GameConfig } from "../../../../shared/gameConfig.ts";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns.ts";
@@ -244,6 +245,7 @@ export class Obstacle extends BaseGameObject {
                         this.door
                         && this.door.open
                         && this.door.autoClose
+                        && !this.delayedDoorInteraction.lock
                         && this.checkNearByPlayers()
                     )
                 ) {
@@ -272,9 +274,12 @@ export class Obstacle extends BaseGameObject {
                     }
 
                     if (this.door && this.delayedDoorInteraction.lock) {
-                        const couldUse = this.door.canUse;
+                        const locked = this.door.locked;
+                        const canUse = this.door.canUse;
                         this.door.canUse = this.delayedDoorInteraction.lock === "unlock";
-                        if (couldUse !== this.door.canUse) {
+                        this.door.locked = !this.door.canUse;
+
+                        if (locked !== this.door.locked || canUse !== this.door.canUse) {
                             this.setDirty();
                         }
                     }
@@ -326,6 +331,7 @@ export class Obstacle extends BaseGameObject {
             if (this.useExpirationTicker < 0 && this.memorizedDoorState && this.isDoor) {
                 this.setDoorState(this.memorizedDoorState.open, undefined, this.memorizedDoorState.useDir);
                 this.door!.canUse = this.memorizedDoorState.canUse;
+                this.door!.locked = !this.door!.canUse;
                 this.setDirty();
             }
         }
@@ -567,24 +573,14 @@ export class Obstacle extends BaseGameObject {
             params.source?.__type === ObjectType.Player
             && params.source.hasPerk("scavenger")
         ) {
-            lootTablesOrItems.push({
-                tier: "tier_world",
-                min: 1,
-                max: 1,
-                props: {},
-            });
+            lootTablesOrItems.push(PerkProperties.scavenger.lootTableConf);
         }
 
         if (
             params.source?.__type === ObjectType.Player
             && params.source.hasPerk("scavenger_adv")
         ) {
-            lootTablesOrItems.push({
-                tier: "tier_scavenger_adv",
-                min: 1,
-                max: 1,
-                props: {},
-            });
+            lootTablesOrItems.push(PerkProperties.scavenger_adv.lootTableConf);
         }
 
         // cobalt class pod logic

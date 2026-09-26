@@ -153,10 +153,9 @@ export class WeaponManager {
 
             if (
                 swappingToGun
-                // @ts-expect-error All combinations of non-identical non-zero values (including undefined)
-                //                  give NaN or a number not equal to 1, meaning that this correctly checks
-                //                  for two identical non-zero numerical deploy groups
-                && curWeaponDef.deployGroup / nextWeaponDef.deployGroup === 1
+                && nextWeaponDef.deployGroup !== undefined
+                && (curWeaponDef as GunDef).deployGroup !== undefined
+                && nextWeaponDef.deployGroup === (curWeaponDef as GunDef).deployGroup
                 && curWeapon.cooldown > 0
             ) {
                 effectiveSwitchDelay = nextWeaponDef.switchDelay;
@@ -833,7 +832,7 @@ export class WeaponManager {
         }
 
         if (shouldApplyChambered) {
-            damageMult *= 1.25;
+            damageMult *= PerkProperties.chambered.damageMult;
         }
 
         //
@@ -873,8 +872,16 @@ export class WeaponManager {
         const bulletCount = itemDef.bulletCount;
         const jitter = itemDef.jitter ?? 0.25;
 
+        const bonus45 = itemDef.ammo === "45acp" && this.player.hasPerk("bonus_45");
+
         for (let i = 0; i < bulletCount; i++) {
-            const deviation = firstShotAccuracy
+            const empowered45 = bonus45 && Math.random() < PerkProperties.bonus_45.empoweredChance;
+            if (empowered45) {
+                damageMult *= PerkProperties.bonus_45.empoweredDamageMult;
+                speedMult *= PerkProperties.bonus_45.empoweredSpeedMult;
+            }
+
+            const deviation = (empowered45 || firstShotAccuracy)
                 ? 0
                 : util.random(-0.5, 0.5) * (spread || 0);
             const shotDir = v2.rotate(direction, math.deg2rad(deviation));
@@ -928,7 +935,7 @@ export class WeaponManager {
                 shotOffhand: offHand,
                 trailSaturated: shouldApplyChambered || saturated > 1,
                 trailSmall: false,
-                trailThick: shouldApplyChambered,
+                trailThick: shouldApplyChambered || empowered45,
                 reflectCount: 0,
                 splinter: hasSplinter,
                 apRounds: hasApRounds,

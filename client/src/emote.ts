@@ -233,7 +233,7 @@ export class EmoteBarn {
     ) {
         this.triggerPing = () => {
             if (this.activePlayer) {
-                let worldPos: Vec2;
+                let worldPos: Vec2 | undefined;
                 // Determine if this is going to be a team ping or an emote
                 if (this.emoteSelector.ping && !this.emoteWheelsGreyed) {
                     const pingData = PingDefs[this.emoteSelector.ping];
@@ -756,7 +756,7 @@ export class EmoteBarn {
 
                     // Colorize if defined
                     const ammo = GameObjectDefs.typeToDefSafe((lootDef as GunDef).ammo) as AmmoDef;
-                    e.circleOuter.tint = ammo ? ammo.lootImg.tintDark! : 0;
+                    e.circleOuter.tint = ammo ? ammo.lootImg.tintDark : 0;
 
                     // Rotate if defined
                     if (lootDef.lootImg.rot) {

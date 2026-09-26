@@ -12,6 +12,7 @@ import {
 import type { GunDef } from "../../../../shared/defs/gameObjects/gunDefs.ts";
 import type { MeleeDef } from "../../../../shared/defs/gameObjects/meleeDefs.ts";
 import { PerkProperties } from "../../../../shared/defs/gameObjects/perkDefs.ts";
+import type { RoleDef } from "../../../../shared/defs/gameObjects/roleDefs.ts";
 import type { ThrowableDef } from "../../../../shared/defs/gameObjects/throwableDefs.ts";
 import { UnlockDefs } from "../../../../shared/defs/gameObjects/unlockDefs.ts";
 import { GameObjectDefs } from "../../../../shared/defs/register.ts";
@@ -113,7 +114,7 @@ export class PlayerBarn {
     playerStatusTicker = 0;
     playerStatusRate = 0;
 
-    defaultItems = util.mergeDeep(
+    defaultItems = util.mergeDeep<typeof GameConfig["player"]["defaultItems"]>(
         {},
         GameConfig.player.defaultItems,
         Config.defaultItems,
@@ -129,10 +130,9 @@ export class PlayerBarn {
      * Assigned once at game end
      */
     factionsMvp?: Player = undefined;
-    sentMvpQuestUpdate = false;
 
     constructor(readonly game: Game) {
-        this.bagSizes = util.mergeDeep(
+        this.bagSizes = util.mergeDeep<typeof GameConfig["bagSizes"]>(
             {},
             GameConfig.bagSizes,
             this.game.map.mapDef.gameConfig.bagSizes,
@@ -290,12 +290,6 @@ export class PlayerBarn {
                 sendWinEmotes = true;
                 this.sentWinEmotes = true;
             }
-        }
-
-        if (!this.sentMvpQuestUpdate && this.game.over) {
-            this.sentMvpQuestUpdate = true;
-            const mvp = this.factionsMvp;
-            mvp?.questManager.trackEvent("be_mvp", { role: mvp.role });
         }
 
         if (this.game.isTeamMode || this.game.map.factionMode) {
@@ -777,6 +771,29 @@ export class Player extends BaseGameObject {
         return (GameObjectDefs.typeToDef(type) as BackpackDef | HelmetDef | ChestDef).level;
     }
 
+    /**
+     * Handles knowing if a gear item is better or worse, to show the "better item equipped" toast
+     */
+    getGearQuality(type: string) {
+        if (!type) {
+            return 0;
+        }
+
+        const def = GameObjectDefs.typeToDef(type) as BackpackDef | HelmetDef | ChestDef;
+        let level = def.level * 10;
+        if (def.type === "helmet") {
+            if (def.perk) {
+                level += 1;
+            }
+            if (def.role) {
+                level += 1;
+            }
+        } else if (def.type === "backpack") {
+            level += def.maxPerks ?? 1;
+        }
+        return level;
+    }
+
     layer: number;
     aimLayer = 0;
     dead = false;
@@ -862,7 +879,7 @@ export class Player extends BaseGameObject {
 
         const roleOverride = this.game.map.mapDef.gameConfig.roles?.roleOverrides?.[role];
         if (roleOverride) {
-            roleDef = util.mergeDeep({}, roleDef, roleOverride);
+            roleDef = util.mergeDeep<RoleDef>({}, roleDef, roleOverride);
         }
 
         if (role === "leader") {
@@ -1588,9 +1605,11 @@ export class Player extends BaseGameObject {
             && this.bleedTicker < 0
         ) {
             const hasDrain = this.hasPerk("trick_drain");
-            this.bleedTicker = hasDrain
-                ? GameConfig.player.bleedTickRate * 3
-                : GameConfig.player.bleedTickRate;
+            this.bleedTicker = GameConfig.player.bleedTickRate;
+
+            if (hasDrain) {
+                this.bleedTicker *= PerkProperties.trick_drain.bleedTickRateMult;
+            }
 
             const mapConfig = this.game.map.mapDef.gameConfig;
 
@@ -1613,7 +1632,10 @@ export class Player extends BaseGameObject {
         this.chattyTicker -= dt;
 
         if (this.hasPerk("trick_chatty") && this.chattyTicker < 0) {
-            this.chattyTicker = util.random(5, 15);
+            this.chattyTicker = util.random(
+                PerkProperties.trick_chatty.minInterval,
+                PerkProperties.trick_chatty.maxInterval,
+            );
 
             const emotes = Object.keys(EmotesDefs);
 
@@ -1669,7 +1691,7 @@ export class Player extends BaseGameObject {
                             target.health += itemDef.heal;
                             if (this.hasPerk("combat_stims")) {
                                 this.combatStimsActive = true;
-                                this._combatStimsTicker = 5;
+                                this._combatStimsTicker = PerkProperties.combat_stims.effectDuration;
                             }
                         });
                     }
@@ -1678,7 +1700,7 @@ export class Player extends BaseGameObject {
                             target.boost += itemDef.boost;
                             if (this.hasPerk("combat_stims")) {
                                 this.combatStimsActive = true;
-                                this._combatStimsTicker = 5;
+                                this._combatStimsTicker = PerkProperties.combat_stims.effectDuration;
                             }
                         });
                     }
@@ -2048,9 +2070,9 @@ export class Player extends BaseGameObject {
                     case "helmet":
                     case "chest":
                     case "backpack": {
-                        const thisLevel = this.getGearLevel(this[itemDef.type]);
-                        const thatLevel = this.getGearLevel(closestLoot.type);
-                        if (thisLevel < thatLevel) {
+                        const thisQuality = this.getGearQuality(this[itemDef.type]);
+                        const thatQuality = this.getGearQuality(closestLoot.type);
+                        if (thisQuality < thatQuality) {
                             this.pickupLoot(closestLoot);
                         }
                         break;
@@ -2697,17 +2719,17 @@ export class Player extends BaseGameObject {
                 }
 
                 if (killCreditSource.hasPerk("takedown")) {
-                    killCreditSource.health += 25;
-                    killCreditSource.boost += 25;
-                    killCreditSource.giveHaste(GameConfig.HasteType.Takedown, 3);
+                    killCreditSource.health += PerkProperties.takedown.hpReward;
+                    killCreditSource.boost += PerkProperties.takedown.boostReward;
+                    killCreditSource.giveHaste(GameConfig.HasteType.Takedown, PerkProperties.takedown.hasteDuration);
                 }
 
                 // Pirate's Bounty (Cutlass-specific)
                 const weaponDef = GameObjectDefs.typeToDefSafe(params.gameSourceType || "");
                 if (killCreditSource.hasPerk("pirate") && weaponDef?.type == "melee") {
-                    const count = util.randomInt(3, 4);
+                    const count = util.randomInt(PerkProperties.pirate.minCount, PerkProperties.pirate.maxCount);
                     for (let i = 0; i < count; i++) {
-                        const item = this.game.lootBarn.getLootTable("tier_pirate");
+                        const item = this.game.lootBarn.getLootTable(PerkProperties.pirate.tier);
                         if (!item) continue;
 
                         this.game.lootBarn.addLoot(
@@ -2723,8 +2745,8 @@ export class Player extends BaseGameObject {
                     }
 
                     // rare gun
-                    if (Math.random() < 0.12) {
-                        const item = this.game.lootBarn.getLootTable("tier_pirate_rare");
+                    if (Math.random() < PerkProperties.pirate.rareChance) {
+                        const item = this.game.lootBarn.getLootTable(PerkProperties.pirate.rareTier);
                         if (item) {
                             this.game.lootBarn.addLoot(
                                 item.name,
@@ -2796,8 +2818,8 @@ export class Player extends BaseGameObject {
                 this.pos,
                 this.layer,
                 v2.create(0, 0),
-                12,
-                5,
+                PerkProperties.martyrdom.projectileCount,
+                PerkProperties.martyrdom.projectileMaxVel,
             );
         }
 
@@ -2918,7 +2940,7 @@ export class Player extends BaseGameObject {
 
         for (const item of Object.keys(this.invManager.items) as InventoryItem[]) {
             // const def = GameObjectDefs[item] as AmmoDef | HealDef;
-            if (item == "1xscope") {
+            if (item == "1xscope" || (this.game.map.sniperMode && item == "2xscope")) {
                 continue;
             }
 
@@ -3830,20 +3852,13 @@ export class Player extends BaseGameObject {
             case "chest":
             case "backpack":
                 {
-                    const objLevel = this.getGearLevel(obj.type);
+                    const objQuality = this.getGearQuality(obj.type);
                     const thisType = this[def.type];
                     const thisDef = GameObjectDefs.typeToDefSafe(thisType);
-                    const thisLevel = this.getGearLevel(thisType);
+                    const thisQuality = this.getGearQuality(thisType);
                     amountLeft = 1;
 
-                    // role helmets and perk helmets can't be dropped in favor of another helmet, they're the "highest" tier
-                    if (
-                        def.type == "helmet"
-                        && (this.hasRoleHelmet
-                            || (thisDef && (thisDef as HelmetDef).perk)
-                            || (thisDef && (thisDef as HelmetDef).role))
-                    ) {
-                        amountLeft = 1;
+                    if ((def.type == "helmet" && this.hasRoleHelmet) || thisQuality > objQuality) {
                         lootToAdd = obj.type;
                         pickupMsg.type = net.PickupMsgType.BetterItemEquipped;
                         break;
@@ -3852,7 +3867,7 @@ export class Player extends BaseGameObject {
                     if (thisType === obj.type) {
                         lootToAdd = obj.type;
                         pickupMsg.type = net.PickupMsgType.AlreadyEquipped;
-                    } else if (thisLevel <= objLevel) {
+                    } else {
                         lootToAdd = thisType;
                         this[def.type] = obj.type;
                         pickupMsg.type = net.PickupMsgType.Success;
@@ -3876,9 +3891,6 @@ export class Player extends BaseGameObject {
                         }
 
                         this.setDirty();
-                    } else {
-                        lootToAdd = obj.type;
-                        pickupMsg.type = net.PickupMsgType.BetterItemEquipped;
                     }
                     if (this.getGearLevel(lootToAdd) === 0) lootToAdd = "";
                 }
@@ -3932,9 +3944,10 @@ export class Player extends BaseGameObject {
                     this.game.playerBarn.addEmote(emoteType, this.__id);
                 }
 
-                const perkSlotType = this.perks.find(
+                const perkSlots = this.perks.filter(
                     (p) => p.droppable || p.replaceOnDeath === "halloween_mystery",
-                )?.type;
+                );
+                const perkSlotType = perkSlots[0]?.type;
 
                 // The client can only show 4 perks in the UI.
                 // If the player already has 4 or more perks, they cannot pick up a new one.
@@ -3943,7 +3956,10 @@ export class Player extends BaseGameObject {
                     pickupMsg.type = net.PickupMsgType.MaxPerks;
                     break;
                 }
-                if (perkSlotType) {
+                if (
+                    perkSlotType
+                    && perkSlots.length >= (GameObjectDefs.typeToDef(this.backpack, "backpack").maxPerks ?? 1)
+                ) {
                     amountLeft = 1;
                     lootToAdd = isMistery ? "" : perkSlotType;
                     this.removePerk(perkSlotType);
@@ -4525,14 +4541,14 @@ export class Player extends BaseGameObject {
 
         const affectedPlayers = this.game.modeManager.getNearbyAlivePlayersContext(
             this,
-            60,
+            PerkProperties.final_bugle.effectRange,
         );
 
         for (const player of affectedPlayers) {
             player.lastBreathActive = true;
             player._lastBreathTicker = 5;
 
-            player.giveHaste(GameConfig.HasteType.Inspire, 5);
+            player.giveHaste(GameConfig.HasteType.Inspire, PerkProperties.final_bugle.hasteDuration);
             if (player.teamId == GameConfig.FactionTeam.Red && player.__id != this.__id) {
                 this.game.playerBarn.addEmote("emote_bugle_final_red", player.__id);
             }
@@ -4697,7 +4713,7 @@ export class Player extends BaseGameObject {
         if (this.weaponManager.meleeAttacks.length == 0) {
             let equipSpeed = weaponDef.speed.equip;
             if (this.hasPerk("small_arms") && weaponDef.type == "gun") {
-                equipSpeed = 1;
+                equipSpeed = PerkProperties.small_arms.gunEquipSpeed;
             }
 
             this.speed += equipSpeed;

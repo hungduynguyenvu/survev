@@ -330,12 +330,12 @@ export const InteractableDefs: Record<string, ObstacleDef> = {
         img: { sprite: "map-control-panel-04.img" },
     }),
     control_panel_06: createControlPanel({
-        collision: collider.createAabbExtents(v2.create(0, 0), v2.create(2.5, 1.2)),
+        collision: collider.createAabbExtents(v2.create(0, 0), v2.create(3, 1.4)),
         health: 200,
         img: { sprite: "map-control-panel-06.img" },
     }),
-    // Reserve-specific control panel
-    control_panel_07: createControlPanel({
+    // The Reserve lockout control panel
+    control_panel_07de: createControlPanel({
         collision: collider.createAabbExtents(v2.create(0, 0), v2.create(2.25, 1.7)),
         destructible: false,
         button: {
@@ -348,6 +348,30 @@ export const InteractableDefs: Record<string, ObstacleDef> = {
             useLock: "lock",
             useCooldown: 27,
             useExpiration: 12,
+            resetAfterCooldown: true,
+            useDir: v2.create(-1, 0),
+            useImg: "map-control-panel-02.img",
+            sound: {
+                on: "cell_control_01",
+                off: "button_press_01",
+            },
+        },
+        img: { sprite: "map-control-panel-01.img" },
+    }),
+    // Cloud Bunker lockout control panel
+    control_panel_07sv: createControlPanel({
+        collision: collider.createAabbExtents(v2.create(0, 0), v2.create(2.25, 1.7)),
+        destructible: false,
+        button: {
+            interactionRad: 0.2,
+            interactionText: "game-use",
+            useOnce: false,
+            useType: "lab_door_01",
+            useDelay: 0.25,
+            useStyle: "close",
+            useLock: "lock",
+            useCooldown: 40,
+            useExpiration: 15,
             resetAfterCooldown: true,
             useDir: v2.create(-1, 0),
             useImg: "map-control-panel-02.img",
