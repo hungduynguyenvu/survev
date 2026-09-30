@@ -8,7 +8,7 @@ import { GameObjectDefs } from "../../../shared/defs/register.ts";
 import { Action, GameConfig, GasMode, TeamMode } from "../../../shared/gameConfig.ts";
 import type { PlayerStatsMsg } from "../../../shared/net/playerStatsMsg.ts";
 import { SpectateAction } from "../../../shared/net/spectateMsg.ts";
-import type { MapIndicator, PlayerStatus } from "../../../shared/net/updateMsg.ts";
+import type { MapIndicator } from "../../../shared/net/updateMsg.ts";
 import { coldet } from "../../../shared/utils/coldet.ts";
 import { math } from "../../../shared/utils/math.ts";
 import { v2, type Vec2 } from "../../../shared/utils/v2.ts";
@@ -26,7 +26,7 @@ import { MapIndicatorBarn } from "../objects/mapIndicator.ts";
 import { type MapSprite, MapSpriteBarn } from "../objects/mapSprite.ts";
 import type { ParticleBarn } from "../objects/particles.ts";
 import type { PlaneBarn } from "../objects/plane.ts";
-import type { Player, PlayerBarn } from "../objects/player.ts";
+import type { ClientPlayerStatus, Player, PlayerBarn } from "../objects/player.ts";
 import { SDK } from "../sdk/sdk.ts";
 import type { Localization } from "./localization.ts";
 import { PieTimer } from "./pieTimer.ts";
@@ -72,7 +72,7 @@ interface ContainerWithMask extends PIXI.Container {
     mask: PIXI.Graphics;
 }
 
-type PrevStatus = Pick<PlayerStatus, "downed" | "dead" | "disconnected" | "role">;
+type PrevStatus = Pick<ClientPlayerStatus, "downed" | "dead" | "disconnected" | "role">;
 export class UiManager {
     m_pieTimer = new PieTimer();
     gameElem = $("#ui-game");
@@ -221,8 +221,6 @@ export class UiManager {
         gasSafeZone: PIXI.Container;
         airstrikeZones: PIXI.Container;
         mapSprites: PIXI.Container;
-        teammates: PIXI.Container;
-        player: PIXI.Container;
         border: PIXI.Graphics;
     };
 
@@ -471,8 +469,6 @@ export class UiManager {
             gasSafeZone: this.gasSafeZoneRenderer.display,
             airstrikeZones: planeBarn.airstrikeZoneContainer,
             mapSprites: this.mapSpriteBarn.container,
-            teammates: new PIXI.Container(),
-            player: new PIXI.Container(),
             border: new PIXI.Graphics(),
         };
 
@@ -482,8 +478,6 @@ export class UiManager {
         this.container.addChild(this.display.gasSafeZone);
         this.container.addChild(this.display.airstrikeZones);
         this.container.addChild(this.display.mapSprites);
-        this.container.addChild(this.display.teammates);
-        this.container.addChild(this.display.player);
         this.container.addChild(this.display.border);
 
         const minimapMargin = this.getMinimapMargin();
@@ -1092,10 +1086,10 @@ export class UiManager {
                 const s = this.mapSpriteBarn.addSprite();
                 s.pos = v2.copy(pos);
                 s.scale = scale;
-                s.lifetime = pingDef.mapLife!;
+                s.lifetime = pingDef.mapLife;
                 s.pulse = false;
                 s.zOrder = 100;
-                s.sprite.texture = PIXI.Texture.from(pingDef.mapTexture!);
+                s.sprite.texture = PIXI.Texture.from(pingDef.mapTexture);
                 s.sprite.tint = tint;
                 return s;
             };
@@ -1103,7 +1097,7 @@ export class UiManager {
                 const s = this.mapSpriteBarn.addSprite();
                 s.pos = v2.copy(pos);
                 s.scale = 0;
-                s.lifetime = pingDef.pingLife!;
+                s.lifetime = pingDef.pingLife;
                 s.pulse = true;
                 s.zOrder = 99;
                 s.sprite.texture = PIXI.Texture.from("ping-map-pulse.img");
@@ -1114,9 +1108,9 @@ export class UiManager {
                 // Map-event pings free themselves after they are finished;
                 // there's no limit to the number that an occur simultaneously.
                 const scale = (device.uiLayout == device.UiLayout.Sm ? 0.15 : 0.2) * 1.5;
-                createPingSprite(scale, pingDef.tint!).release();
+                createPingSprite(scale, pingDef.tint).release();
 
-                createPulseSprite(pingDef.tint!).release();
+                createPulseSprite(pingDef.tint).release();
             } else {
                 //
                 // Player pings

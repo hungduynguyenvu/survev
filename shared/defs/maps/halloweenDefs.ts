@@ -10,7 +10,7 @@ const mapDef: PartialMapDef = {
         name: "Halloween",
         icon: "img/gui/pumpkin-play.svg",
         buttonCss: "btn-mode-halloween",
-        backgroundImg: "img/main_splash_halloween.png",
+        backgroundImg: "img/splashes/halloween.webp",
     },
     assets: {
         audio: [
@@ -94,6 +94,9 @@ const mapDef: PartialMapDef = {
         },
         particles: {
             camera: "falling_leaf_halloween",
+        },
+        ambience: {
+            music: "menu_music_02",
         },
         valueAdjust: 0.3,
     },

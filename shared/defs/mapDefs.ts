@@ -108,6 +108,12 @@ export interface MapDef {
         particles: {
             camera: string;
         };
+        ambience: {
+            music: string;
+            wind: string;
+            river: string;
+            waves: string;
+        };
         tracerColors: DeepPartial<typeof GameConfig["tracerColors"]>;
         airdrop: {
             planeImg: string;
@@ -197,6 +203,10 @@ export interface MapDef {
                     innerRad: number;
                     outerRad: number;
                     centerObj?: string;
+                    /**
+                     * Disables bushes and rocks from spawning
+                     */
+                    noRiverObjs?: boolean;
                     riverMaskRad?: number;
                     spawnBound: {
                         pos: Vec2;
